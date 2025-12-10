@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./ecommerce.db"
+}
+
+// 1. Tabela do Administrador
+model AdminUser {
+  id        Int      @id @default(autoincrement())
+  login     String   @unique // Será "MFAirGuns"
+  password  String   // Será o hash de "MfSandroM" (seguro)
+  name      String   @default("Admin")
+}
+
+// 2. Tabela de Produtos
+model Product {
+  id          Int      @id @default(autoincrement())
+  
+  // -- Informações Principais --
+  name        String   // Ex: Carabina de Pressão PCP
+  price       Decimal  // Ex: 3500.00
+  description String   // Texto longo explicativo
+  features    String   // Texto das "Características" (pode usar quebras de linha)
+  
+  // -- Categoria (Muito Importante) --
+  // Vamos salvar como Texto, mas no código só aceitaremos "ARMAS" ou "ACESSORIOS"
+  category    String   
+  
+  // -- Controle --
+  active      Boolean  @default(true) // Se acabar, marca false e some do site
+  createdAt   DateTime @default(now())
+
+  // -- Imagens --
+  // Relação: Um produto tem VÁRIAS imagens
+  images      ProductImage[]
+}
+
+// 3. Tabela de Imagens (Para suportar as 10 fotos)
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  url       String   // O link da imagem (ex: /uploads/foto1.jpg)
+  
+  // Relação com o produto
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+}
