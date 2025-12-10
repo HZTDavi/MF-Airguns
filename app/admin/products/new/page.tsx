@@ -30,16 +30,38 @@ export default function NewProductPage() {
         });
     };
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const newFiles = Array.from(e.target.files);
+    const [isDragging, setIsDragging] = useState(false);
 
-            // Adiciona aos arquivos existentes
-            setSelectedFiles(prev => [...prev, ...newFiles]);
-
-            // Gera previews
-            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    const processFiles = (files: File[]) => {
+        if (files.length > 0) {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            setSelectedFiles(prev => [...prev, ...imageFiles]);
+            const newPreviews = imageFiles.map(file => URL.createObjectURL(file));
             setPreviews(prev => [...prev, ...newPreviews]);
+        }
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            processFiles(Array.from(e.target.files));
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files) {
+            processFiles(Array.from(e.dataTransfer.files));
         }
     };
 
@@ -165,8 +187,18 @@ export default function NewProductPage() {
                         <div
                             className="upload-area"
                             onClick={() => fileInputRef.current?.click()}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            style={{
+                                borderColor: isDragging ? '#C5A059' : '#333',
+                                backgroundColor: isDragging ? '#222' : '#1a1a1a',
+                                transform: isDragging ? 'scale(1.02)' : 'scale(1)'
+                            }}
                         >
-                            <span>📁 Clique para selecionar fotos do seu computador</span>
+                            <span style={{ pointerEvents: 'none' }}>
+                                {isDragging ? '📂 Solte os arquivos aqui!' : '📁 Clique ou Arraste fotos para cá'}
+                            </span>
                         </div>
 
                         {/* Preview das imagens */}
